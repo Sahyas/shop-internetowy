@@ -1,0 +1,16 @@
+# Maven
+/target/
+
+# Idea
+/.idea/
+*.iml
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Firebase service account (should not be committed)
+/serviceAccountKey.json

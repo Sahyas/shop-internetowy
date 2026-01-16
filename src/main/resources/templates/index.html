@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Sklep - lista produktów</title>
+</head>
+<body>
+<h1>Produkty</h1>
+<ul>
+    <li th:each="p : ${products}">
+        <a th:href="@{'/product/' + ${p.id}}" th:text="${p.name}">Produkt</a>
+        - <span th:text="${p.price}">0.0</span> zł
+    </li>
+</ul>
+<p><a href="/admin/products">Panel admina</a> (wymaga uprawnień)</p>
+</body>
+</html>

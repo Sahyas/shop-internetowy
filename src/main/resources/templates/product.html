@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${product.name}">Produkt</title>
+</head>
+<body>
+<h1 th:text="${product.name}">Nazwa</h1>
+<p th:text="${product.description}">Opis</p>
+<p>Cena: <span th:text="${product.price}">0.0</span> zł</p>
+<p><a href="/">Powrót</a></p>
+</body>
+</html>
