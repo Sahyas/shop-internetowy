@@ -1,39 +1,87 @@
 package com.example.shop.service;
 
 import com.example.shop.model.Product;
+import com.example.shop.repository.ProductRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class ProductService {
-    private final Map<Long, Product> storage = new ConcurrentHashMap<>();
-    private long idSeq = 1;
+    
+    private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
+    
+    private final ProductRepository productRepository;
+
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
 
     @PostConstruct
     public void init() {
-        // sample seed data
-        save(new Product(null, "Książka Java", "Poradnik programisty Java.", 59.99));
-        save(new Product(null, "Mysz USB", "Prosta mysz optyczna.", 39.90));
+        List<Product> existing = productRepository.findAll();
+        if (existing.isEmpty()) {
+            logger.info("Brak produktów w bazie - pomijam seeding");
+            return;
+        }
+        logger.info("Znaleziono {} istniejących produktów - uzupełniam brakujące obrazki", existing.size());
+        backfillMissingImages(existing);
+    }
+
+    private void backfillMissingImages(List<Product> products) {
+        int updated = 0;
+        for (Product p : products) {
+            if (p.getImageUrl() == null || p.getImageUrl().isBlank()) {
+                String fallback = fallbackImageFor(p.getCategory());
+                p.setImageUrl(fallback);
+                save(p);
+                updated++;
+            }
+        }
+        if (updated > 0) {
+            logger.info("Uzupełniono obrazki dla {} produktów", updated);
+        }
+    }
+
+    private String fallbackImageFor(String category) {
+        if (category == null) return defaultImage();
+        String cat = category.toLowerCase();
+        if (cat.contains("elektron")) {
+            return "/images/products/laptop.svg";
+        }
+        if (cat.contains("książ") || cat.contains("ksiaz")) {
+            return "/images/products/book.svg";
+        }
+        if (cat.contains("akces")) {
+            return "/images/products/keyboard.svg";
+        }
+        return defaultImage();
+    }
+
+    private String defaultImage() {
+        return "/images/products/placeholder.svg";
     }
 
     public List<Product> findAll() {
-        return new ArrayList<>(storage.values());
+        return productRepository.findAll();
     }
 
-    public Optional<Product> findById(Long id) {
-        return Optional.ofNullable(storage.get(id));
+    public Optional<Product> findById(String id) {
+        return productRepository.findById(id);
     }
 
-    public Product save(Product p) {
-        if (p.getId() == null) p.setId(idSeq++);
-        storage.put(p.getId(), p);
-        return p;
+    public Product save(Product product) {
+        return productRepository.save(product);
     }
 
-    public void delete(Long id) {
-        storage.remove(id);
+    public void delete(String id) {
+        productRepository.delete(id);
+    }
+    
+    public List<Product> findByCategory(String category) {
+        return productRepository.findByCategory(category);
     }
 }

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250" fill="none">
+  <rect width="400" height="250" fill="#111827"/>
+  <rect x="70" y="55" width="260" height="140" rx="12" fill="#1F2937" stroke="#9CA3AF" stroke-width="3" stroke-dasharray="10 8"/>
+  <path d="M130 150l50-55 40 42 35-35 50 48" stroke="#9CA3AF" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="170" cy="100" r="12" fill="#9CA3AF"/>
+  <text x="200" y="210" fill="#E5E7EB" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">Brak obrazka</text>
+</svg>

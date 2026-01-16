@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moje zamówienia</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">🛒 Sklep Internetowy</div>
+            <ul>
+                <li><a href="/">Sklep</a></li>
+                <li><a href="/cart">Koszyk</a></li>
+                <li><a href="/orders">Moje zamówienia</a></li>
+                <li sec:authorize="isAuthenticated() and hasRole('ADMIN')"><a href="/admin">Panel admina</a></li>
+                <li><a href="/logout">Wyloguj</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <h1>Moje zamówienia</h1>
+        
+        <div th:if="${orders != null && !orders.isEmpty()}">
+            <div th:each="order : ${orders}" class="card">
+                <h3>Zamówienie #<span th:text="${order.id}">ID</span></h3>
+                <p>
+                    <strong>Status:</strong> 
+                    <span th:text="${order.status}" 
+                          th:style="${order.status == 'ZŁOŻONE' ? 'color: #f39c12' : (order.status == 'WYSŁANE' ? 'color: #3498db' : 'color: #27ae60')}">
+                        Status
+                    </span><br>
+                    <strong>Suma:</strong> <span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)}">0.00</span> zł
+                </p>
+                
+                <h4>Produkty:</h4>
+                <ul>
+                    <li th:each="item : ${order.items}">
+                        <span th:text="${item.productName}">Produkt</span> 
+                        - <span th:text="${item.quantity}">1</span> szt. 
+                        × <span th:text="${#numbers.formatDecimal(item.price, 1, 2)}">0.00</span> zł
+                    </li>
+                </ul>
+                
+                <div th:if="${order.shippingAddress}">
+                    <h4>Adres dostawy:</h4>
+                    <p>
+                        <span th:text="${order.shippingAddress.street}">Ulica</span>,
+                        <span th:text="${order.shippingAddress.postalCode}">00-000</span>
+                        <span th:text="${order.shippingAddress.city}">Miasto</span><br>
+                        Tel: <span th:text="${order.shippingAddress.phone}">-</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div th:if="${orders == null || orders.isEmpty()}">
+            <p>Nie masz jeszcze żadnych zamówień.</p>
+            <a href="/" class="btn btn-primary">Przejdź do sklepu</a>
+        </div>
+    </div>
+</body>
+</html>

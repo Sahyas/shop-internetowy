@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250" fill="none">
+  <rect width="400" height="250" fill="#111827"/>
+  <path d="M120 140c0-45 30-80 80-80s80 35 80 80" stroke="#A855F7" stroke-width="12" stroke-linecap="round"/>
+  <rect x="95" y="120" width="30" height="70" rx="10" fill="#4C1D95" stroke="#A855F7" stroke-width="3"/>
+  <rect x="275" y="120" width="30" height="70" rx="10" fill="#4C1D95" stroke="#A855F7" stroke-width="3"/>
+  <rect x="110" y="130" width="26" height="50" rx="6" fill="#8B5CF6"/>
+  <rect x="264" y="130" width="26" height="50" rx="6" fill="#8B5CF6"/>
+  <text x="200" y="210" fill="#EDE9FE" font-family="Arial, sans-serif" font-size="22" text-anchor="middle">Audio</text>
+</svg>

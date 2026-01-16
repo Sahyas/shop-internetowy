@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Brak dostępu</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+<header>
+    <nav>
+        <ul>
+            <li><a href="/">Strona główna</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/orders">Moje zamówienia</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/logout">Wyloguj</a></li>
+            <li sec:authorize="!isAuthenticated()"><a href="/login">Zaloguj</a></li>
+        </ul>
+    </nav>
+</header>
+<main style="padding: 2rem;">
+    <h1>Brak dostępu</h1>
+    <p>Nie masz uprawnień do tej sekcji. Jeśli uważasz, że to błąd, skontaktuj się z administratorem.</p>
+    <p><a href="/">Wróć na stronę główną</a></p>
+</main>
+</body>
+</html>

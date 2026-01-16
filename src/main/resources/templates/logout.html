@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wylogowano</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">🛒 Sklep Internetowy</div>
+            <ul>
+                <li><a href="/">Sklep</a></li>
+                <li><a href="/login">Zaloguj</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <div class="card" style="max-width: 500px; margin: 4rem auto; text-align: center;">
+            <h1>✓ Wylogowano pomyślnie</h1>
+            <p style="font-size: 1.1rem; margin: 2rem 0;">
+                Zostałeś wylogowany ze swojego konta.
+            </p>
+            <a href="/" class="btn btn-primary" style="margin-right: 1rem;">Powrót do sklepu</a>
+            <a href="/login" class="btn btn-secondary">Zaloguj się ponownie</a>
+        </div>
+    </div>
+</body>
+</html>
