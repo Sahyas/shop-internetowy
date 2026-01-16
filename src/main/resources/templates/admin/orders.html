@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel admina - Zamówienia</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">🛒 Sklep - Panel Admina</div>
+            <ul>
+                <li><a href="/">Sklep</a></li>
+                <li><a href="/admin/products">Produkty</a></li>
+                <li><a href="/admin/orders">Zamówienia</a></li>
+                <li><a href="/admin/users">Użytkownicy</a></li>
+                <li><a href="/logout">Wyloguj</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <h1>Zarządzanie zamówieniami</h1>
+        
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        
+        <div th:if="${orders != null && !orders.isEmpty()}">
+            <div th:each="order : ${orders}" class="card">
+                <h3>Zamówienie #<span th:text="${order.id}">ID</span></h3>
+                <p>
+                    <strong>Użytkownik:</strong> <span th:text="${order.userId}">-</span><br>
+                    <strong>Data:</strong> <span th:text="${new java.util.Date(order.createdAt)}">-</span><br>
+                    <strong>Suma:</strong> <span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)}">0.00</span> zł
+                </p>
+                
+                <div>
+                    <strong>Status:</strong>
+                    <form th:action="@{'/admin/orders/' + ${order.id} + '/status'}" method="post" style="display: inline;">
+                        <select name="status" onchange="this.form.submit()">
+                            <option value="ZŁOŻONE" th:selected="${order.status == 'ZŁOŻONE'}">ZŁOŻONE</option>
+                            <option value="WYSŁANE" th:selected="${order.status == 'WYSŁANE'}">WYSŁANE</option>
+                            <option value="DOSTARCZONO" th:selected="${order.status == 'DOSTARCZONO'}">DOSTARCZONO</option>
+                        </select>
+                    </form>
+                </div>
+                
+                <h4 style="margin-top: 1rem;">Produkty:</h4>
+                <ul>
+                    <li th:each="item : ${order.items}">
+                        <span th:text="${item.productName}">Produkt</span> 
+                        - <span th:text="${item.quantity}">1</span> szt. 
+                        × <span th:text="${#numbers.formatDecimal(item.price, 1, 2)}">0.00</span> zł
+                    </li>
+                </ul>
+                
+                <div th:if="${order.shippingAddress}">
+                    <h4>Adres dostawy:</h4>
+                    <p>
+                        <span th:text="${order.shippingAddress.street}">Ulica</span>,
+                        <span th:text="${order.shippingAddress.postalCode}">00-000</span>
+                        <span th:text="${order.shippingAddress.city}">Miasto</span><br>
+                        Tel: <span th:text="${order.shippingAddress.phone}">-</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div th:if="${orders == null || orders.isEmpty()}">
+            <p>Brak zamówień.</p>
+        </div>
+    </div>
+</body>
+</html>

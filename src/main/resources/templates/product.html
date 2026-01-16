@@ -1,13 +1,82 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${product.name}">Produkt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${product?.name ?: 'Produkt'}">Produkt</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-<h1 th:text="${product.name}">Nazwa</h1>
-<p th:text="${product.description}">Opis</p>
-<p>Cena: <span th:text="${product.price}">0.0</span> zł</p>
-<p><a href="/">Powrót</a></p>
+    <header>
+        <nav>
+            <div class="logo">🛒 Sklep Internetowy</div>
+            <ul>
+                <li><a href="/">Sklep</a></li>
+                <li sec:authorize="isAuthenticated()"><a href="/cart">Koszyk</a></li>
+                <li sec:authorize="isAuthenticated()"><a href="/orders">Moje zamówienia</a></li>
+                <li sec:authorize="isAuthenticated() and hasRole('ADMIN')"><a href="/admin">Panel admina</a></li>
+                <li sec:authorize="isAuthenticated()"><a href="/logout">Wyloguj</a></li>
+                <li sec:authorize="!isAuthenticated()"><a href="/login">Zaloguj</a></li>
+                <li sec:authorize="!isAuthenticated()"><a href="/register">Zarejestruj</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <a href="/" class="btn btn-secondary" style="margin-bottom: 1rem;">← Powrót do listy</a>
+        
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        
+        <div th:if="${product}" class="card">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <img th:src="${product.imageUrl != null && !product.imageUrl.isEmpty() ? product.imageUrl : 'https://via.placeholder.com/400x300?text=Produkt'}" 
+                         th:alt="${product.name}"
+                         style="width: 100%; border-radius: 8px;">
+                </div>
+                <div>
+                    <h1 th:text="${product.name}">Nazwa produktu</h1>
+                    <p style="color: #666; margin-bottom: 1rem;">
+                        <strong>Kategoria:</strong> <span th:text="${product.category}">-</span>
+                    </p>
+                    <div style="font-size: 2rem; color: #27ae60; font-weight: bold; margin: 1rem 0;">
+                        <span th:text="${#numbers.formatDecimal(product.price, 1, 2)}">0.00</span> zł
+                    </div>
+                    
+                    <div style="margin: 1rem 0;">
+                        <span th:if="${product.stockQuantity > 0}" style="color: green; font-size: 1.1rem;">
+                            ✓ Dostępne: <strong th:text="${product.stockQuantity}">0</strong> szt.
+                        </span>
+                        <span th:unless="${product.stockQuantity > 0}" style="color: red; font-size: 1.1rem;">
+                            ✗ Brak na stanie
+                        </span>
+                    </div>
+                    
+                    <form th:if="${product.stockQuantity > 0}" 
+                          th:action="@{'/product/' + ${product.id} + '/add-to-cart'}" 
+                          method="post" 
+                          style="margin-top: 2rem;">
+                        <div class="form-group">
+                            <label for="quantity">Ilość:</label>
+                            <input type="number" id="quantity" name="quantity" value="1" min="1" 
+                                   th:max="${product.stockQuantity}" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Dodaj do koszyka</button>
+                    </form>
+                    
+                    <hr style="margin: 2rem 0;">
+                    
+                    <h3>Opis produktu</h3>
+                    <p th:text="${product.description}">Opis produktu...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div th:unless="${product}">
+            <p>Nie znaleziono produktu.</p>
+        </div>
+    </div>
 </body>
 </html>

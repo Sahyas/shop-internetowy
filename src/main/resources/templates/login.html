@@ -2,15 +2,63 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logowanie</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-<h1>Logowanie</h1>
-<form th:action="@{/login}" method="post">
-    <label>E-mail: <input type="text" name="username"/></label><br/>
-    <label>Hasło: <input type="password" name="password"/></label><br/>
-    <button type="submit">Zaloguj</button>
-    <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
-</form>
+    <header>
+        <nav>
+            <div class="logo">🛒 Sklep Internetowy</div>
+            <ul>
+                <li><a href="/">Sklep</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <div class="card" style="max-width: 500px; margin: 2rem auto;">
+            <h1>Logowanie</h1>
+            
+            <div th:if="${param.error}" class="alert alert-error">
+                Nieprawidłowy email lub hasło.
+            </div>
+            
+            <div th:if="${success}" class="alert alert-success">
+                <span th:text="${success}">Konto utworzone. Zaloguj się.</span>
+            </div>
+
+            <div th:if="${param.logout}" class="alert alert-success">
+                Zostałeś wylogowany.
+            </div>
+            
+            <form th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <label for="username">Email</label>
+                    <input type="email" id="username" name="username" required autofocus>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Hasło</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Zaloguj się</button>
+            </form>
+            
+            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                <h4>Konta testowe:</h4>
+                <p style="font-size: 0.9rem; color: #666;">
+                    <strong>Admin:</strong> admin@example.com / admin123<br>
+                    <strong>Użytkownik:</strong> user@example.com / user123
+                </p>
+                <p style="margin-top: 1rem;">
+                    Nie masz konta? <a href="/register">Załóż je tutaj</a>.
+                </p>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

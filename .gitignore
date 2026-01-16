@@ -14,3 +14,5 @@ Thumbs.db
 
 # Firebase service account (should not be committed)
 /serviceAccountKey.json
+*firebase*adminsdk*.json
+sklep-internetowy-821bc-firebase-adminsdk-fbsvc-3689c290ba.json

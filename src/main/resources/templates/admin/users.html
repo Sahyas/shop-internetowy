@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel admina - Użytkownicy</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">🛒 Sklep - Panel Admina</div>
+            <ul>
+                <li><a href="/">Sklep</a></li>
+                <li><a href="/admin/products">Produkty</a></li>
+                <li><a href="/admin/orders">Zamówienia</a></li>
+                <li><a href="/admin/users">Użytkownicy</a></li>
+                <li><a href="/logout">Wyloguj</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <h1>Zarządzanie użytkownikami</h1>
+        
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Rola</th>
+                    <th>Data utworzenia</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="user : ${users}">
+                    <td th:text="${user.email}">Email</td>
+                    <td th:text="${user.role}">ROLE_USER</td>
+                    <td>-</td>
+                    <td>
+                        <form th:action="@{'/admin/users/' + ${user.uid} + '/role'}" method="post" style="display: inline;">
+                            <select name="role" onchange="if(confirm('Zmienić rolę użytkownika?')) this.form.submit();">
+                                <option value="ROLE_USER" th:selected="${user.role == 'ROLE_USER'}">USER</option>
+                                <option value="ROLE_ADMIN" th:selected="${user.role == 'ROLE_ADMIN'}">ADMIN</option>
+                            </select>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div th:if="${users.isEmpty()}">
+            <p>Brak użytkowników.</p>
+        </div>
+    </div>
+</body>
+</html>

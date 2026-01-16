@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szczegóły zamówienia</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">🛒 Sklep Internetowy</div>
+            <ul>
+                <li><a href="/">Sklep</a></li>
+                <li><a href="/cart">Koszyk</a></li>
+                <li><a href="/orders">Moje zamówienia</a></li>
+                <li><a href="/logout">Wyloguj</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <div th:if="${order == null}">
+            <h1>Zamówienie nie znalezione</h1>
+            <p><a href="/orders" class="btn btn-secondary">Powrót do zamówień</a></p>
+        </div>
+        
+        <div th:if="${order != null}">
+            <h1>Zamówienie #<span th:text="${order.id}">000</span></h1>
+            
+            <div style="margin: 2rem 0;">
+                <h3>Status: <span th:text="${order.status}" class="badge"></span></h3>
+            </div>
+            
+            <div class="card">
+                <h2>Produkty</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Produkt</th>
+                            <th>Ilość</th>
+                            <th>Cena jednostkowa</th>
+                            <th>Razem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${order.items}">
+                            <td th:text="${item.productName}">Nazwa</td>
+                            <td th:text="${item.quantity}">1</td>
+                            <td th:text="${#numbers.formatDecimal(item.price, 1, 2)} + ' zł'">0.00 zł</td>
+                            <td th:text="${#numbers.formatDecimal(item.price * item.quantity, 1, 2)} + ' zł'">0.00 zł</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="text-align: right; margin-top: 1rem;">
+                    <h3>Razem: <span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)} + ' zł'">0.00 zł</span></h3>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Adres dostawy</h2>
+                <p>
+                    <strong th:text="${order.shippingAddress.street}"></strong><br>
+                    <strong th:text="${order.shippingAddress.postalCode + ' ' + order.shippingAddress.city}"></strong><br>
+                    Tel: <strong th:text="${order.shippingAddress.phone}"></strong>
+                </p>
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <a href="/orders" class="btn btn-secondary">Powrót do zamówień</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizacja zamówienia</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">🛒 Sklep Internetowy</div>
+            <ul>
+                <li><a href="/">Sklep</a></li>
+                <li><a href="/cart">Koszyk</a></li>
+                <li><a href="/orders">Moje zamówienia</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <h1>Finalizacja zamówienia</h1>
+        
+        <div class="card">
+            <h2>Dane do wysyłki</h2>
+            <form th:action="@{/cart/checkout}" method="post" th:object="${checkoutDTO}">
+                <div class="form-group">
+                    <label for="street">Ulica i numer *</label>
+                    <input type="text" id="street" th:field="*{street}" required>
+                    <div class="error" th:if="${#fields.hasErrors('street')}" th:errors="*{street}"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="city">Miasto *</label>
+                    <input type="text" id="city" th:field="*{city}" required>
+                    <div class="error" th:if="${#fields.hasErrors('city')}" th:errors="*{city}"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="postalCode">Kod pocztowy *</label>
+                    <input type="text" id="postalCode" th:field="*{postalCode}" placeholder="00-000" required>
+                    <div class="error" th:if="${#fields.hasErrors('postalCode')}" th:errors="*{postalCode}"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Telefon *</label>
+                    <input type="tel" id="phone" th:field="*{phone}" placeholder="+48 123 456 789" required>
+                    <div class="error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
+                    <h3>Podsumowanie</h3>
+                    <p style="font-size: 1.5rem; font-weight: bold;">
+                        Suma: <span th:text="${#numbers.formatDecimal(total, 1, 2)}">0.00</span> zł
+                    </p>
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <a href="/cart" class="btn btn-secondary">Wróć do koszyka</a>
+                    <button type="submit" class="btn btn-success">Złóż zamówienie</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

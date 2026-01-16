@@ -1,17 +1,66 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Sklep - lista produktów</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sklep - Strona główna</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-<h1>Produkty</h1>
-<ul>
-    <li th:each="p : ${products}">
-        <a th:href="@{'/product/' + ${p.id}}" th:text="${p.name}">Produkt</a>
-        - <span th:text="${p.price}">0.0</span> zł
-    </li>
-</ul>
-<p><a href="/admin/products">Panel admina</a> (wymaga uprawnień)</p>
+    <header>
+        <nav>
+            <div class="logo">🛒 Sklep Internetowy</div>
+            <ul>
+                <li><a href="/">Sklep</a></li>
+                <li sec:authorize="isAuthenticated()"><a href="/cart">Koszyk</a></li>
+                <li sec:authorize="isAuthenticated()"><a href="/orders">Moje zamówienia</a></li>
+                <li sec:authorize="isAuthenticated() and hasRole('ADMIN')"><a href="/admin">Panel admina</a></li>
+                <li sec:authorize="isAuthenticated()"><a href="/logout">Wyloguj</a></li>
+                <li sec:authorize="!isAuthenticated()"><a href="/login">Zaloguj</a></li>
+                <li sec:authorize="!isAuthenticated()"><a href="/register">Zarejestruj</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        
+        <h1>Produkty</h1>
+        
+        <!-- Filtr kategorii -->
+        <div style="margin-bottom: 2rem;">
+            <a href="/" class="btn btn-secondary">Wszystkie</a>
+            <a href="/?category=Elektronika" class="btn btn-secondary">Elektronika</a>
+            <a href="/?category=Książki" class="btn btn-secondary">Książki</a>
+            <a href="/?category=Akcesoria" class="btn btn-secondary">Akcesoria</a>
+        </div>
+        
+        <div class="products-grid">
+            <div class="product-card" th:each="p : ${products}">
+                <img th:src="${p.imageUrl != null && !p.imageUrl.isEmpty() ? p.imageUrl : 'https://via.placeholder.com/300x200?text=Produkt'}" 
+                     th:alt="${p.name}">
+                <div class="product-card-body">
+                    <h3 th:text="${p.name}">Nazwa produktu</h3>
+                    <div class="price" th:text="${#numbers.formatDecimal(p.price, 1, 2)} + ' zł'">0.00 zł</div>
+                    <p class="description" th:text="${#strings.abbreviate(p.description, 100)}">Opis produktu</p>
+                    <span th:if="${p.stockQuantity > 0}" style="color: green; font-size: 0.9rem;">
+                        ✓ Dostępne: <span th:text="${p.stockQuantity}">0</span> szt.
+                    </span>
+                    <span th:unless="${p.stockQuantity > 0}" style="color: red; font-size: 0.9rem;">
+                        ✗ Brak na stanie
+                    </span>
+                    <div style="margin-top: 1rem;">
+                        <a th:href="@{'/product/' + ${p.id}}" class="btn btn-primary">Zobacz szczegóły</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div th:if="${products.isEmpty()}">
+            <p>Brak produktów w tej kategorii.</p>
+        </div>
+    </div>
 </body>
 </html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podsumowanie zamówienia</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">🛒 Sklep Internetowy</div>
+            <ul>
+                <li><a href="/">Sklep</a></li>
+                <li><a href="/cart">Koszyk</a></li>
+                <li sec:authorize="isAuthenticated()"><a href="/orders">Moje zamówienia</a></li>
+                <li sec:authorize="isAuthenticated() and hasRole('ADMIN')"><a href="/admin">Panel admina</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            <h1>✓ Zamówienie złożone pomyślnie!</h1>
+            <p>Dziękujemy za zakupy w naszym sklepie.</p>
+            <p th:if="${orderId}">Numer zamówienia: <strong th:text="${orderId}">-</strong></p>
+            <p>Status zamówienia możesz sprawdzić w sekcji <a href="/orders">Moje zamówienia</a>.</p>
+            
+            <div style="margin-top: 2rem;">
+                <a href="/" class="btn btn-primary">Wróć do sklepu</a>
+                <a href="/orders" class="btn btn-secondary">Moje zamówienia</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
