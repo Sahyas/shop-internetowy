@@ -24,6 +24,10 @@
                 Nieprawidłowy email lub hasło.
             </div>
             
+            <div th:if="${success}" class="alert alert-success">
+                <span th:text="${success}">Konto utworzone. Zaloguj się.</span>
+            </div>
+
             <div th:if="${param.logout}" class="alert alert-success">
                 Zostałeś wylogowany.
             </div>
@@ -49,6 +53,9 @@
                 <p style="font-size: 0.9rem; color: #666;">
                     <strong>Admin:</strong> admin@example.com / admin123<br>
                     <strong>Użytkownik:</strong> user@example.com / user123
+                </p>
+                <p style="margin-top: 1rem;">
+                    Nie masz konta? <a href="/register">Załóż je tutaj</a>.
                 </p>
             </div>
         </div>

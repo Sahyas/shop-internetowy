@@ -29,13 +29,6 @@ public class UserService {
     
     @PostConstruct
     public void initTestUsers() {
-        // czyszczenie starych dokumentów
-        try {
-            userRepository.deleteAll();
-        } catch (Exception e) {
-            logger.warn("Błąd podczas czyszczenia: " + e.getMessage());
-        }
-        
         // konta testowe
         try {
             createTestUser("admin@example.com", "admin123", "ROLE_ADMIN");
