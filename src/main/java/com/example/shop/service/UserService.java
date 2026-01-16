@@ -40,20 +40,18 @@ public class UserService {
     
     private void createTestUser(String email, String password, String role) {
         try {
-            Optional<User> existing = findByEmail(email);
-            if (existing.isPresent()) {
-                logger.info("Konto testowe już istnieje: " + email);
-                return;
-            }
-            
-            // Zapis użytkownika do Firestore z zaszyfrowanym hasłem
-            User user = new User();
-            user.setUid("test-" + email.replace("@", "-").replace(".", "-"));
-            user.setEmail(email);
-            user.setPassword(passwordEncoder.encode(password));
-            user.setRole(role);
-            userRepository.save(user);
-            logger.info("Utworzono konto testowe: " + email + " z zaszyfrowanym hasłem");
+            findByEmail(email).ifPresentOrElse(
+                u -> logger.info("Konto testowe już istnieje: " + email),
+                () -> {
+                    User user = new User();
+                    user.setUid("test-" + email.replace("@", "-").replace(".", "-"));
+                    user.setEmail(email);
+                    user.setPassword(passwordEncoder.encode(password));
+                    user.setRole(role);
+                    userRepository.save(user);
+                    logger.info("Utworzono konto testowe: " + email + " z zaszyfrowanym hasłem");
+                }
+            );
         } catch (Exception e) {
             logger.error("Błąd podczas tworzenia użytkownika testowego: " + e.getMessage(), e);
         }
@@ -91,12 +89,15 @@ public class UserService {
     }
     
     public User updateUserRole(String uid, String newRole) {
-        Optional<User> userOpt = userRepository.findByUid(uid);
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            user.setRole(newRole);
-            return userRepository.save(user);
-        }
-        return null;
+        return userRepository.findByUid(uid)
+            .map(user -> {
+                user.setRole(newRole);
+                return userRepository.save(user);
+            })
+            .orElse(null);
+    }
+
+    public void deleteUser(String uid) {
+        userRepository.deleteByUid(uid);
     }
 }

@@ -33,12 +33,11 @@ public class OrderService {
     }
     
     public Order updateOrderStatus(String orderId, String newStatus) {
-        Optional<Order> orderOpt = findById(orderId);
-        if (orderOpt.isPresent()) {
-            Order order = orderOpt.get();
-            order.setStatus(newStatus);
-            return orderRepository.save(order);
-        }
-        return null;
+        return findById(orderId)
+            .map(order -> {
+                order.setStatus(newStatus);
+                return orderRepository.save(order);
+            })
+            .orElse(null);
     }
 }
