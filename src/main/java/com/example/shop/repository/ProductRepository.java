@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Repository
 public class ProductRepository {
@@ -26,39 +27,46 @@ public class ProductRepository {
     
     public List<Product> findAll() {
         if (firestore == null) return new ArrayList<>();
-        
+
         try {
-            ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).get();
-            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-            
-            List<Product> products = new ArrayList<>();
-            for (QueryDocumentSnapshot doc : documents) {
-                Product product = doc.toObject(Product.class);
-                product.setId(doc.getId());
-                products.add(product);
-            }
-            return products;
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Błąd podczas pobierania produktów: " + e.getMessage());
+            List<QueryDocumentSnapshot> documents = firestore.collection(COLLECTION_NAME).get().get().getDocuments();
+            return documents.stream()
+                .map(doc -> {
+                    Product product = doc.toObject(Product.class);
+                    product.setId(doc.getId());
+                    return product;
+                })
+                .collect(Collectors.toCollection(ArrayList::new));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Błąd podczas pobierania produktów", e);
+            return new ArrayList<>();
+        } catch (ExecutionException e) {
+            logger.error("Błąd podczas pobierania produktów", e);
             return new ArrayList<>();
         }
     }
     
     public Optional<Product> findById(String id) {
         if (firestore == null) return Optional.empty();
-        
+
         try {
             DocumentSnapshot doc = firestore.collection(COLLECTION_NAME)
                 .document(id).get().get();
-                
-            if (doc.exists()) {
-                Product product = doc.toObject(Product.class);
-                product.setId(doc.getId());
-                return Optional.of(product);
-            }
+
+            return doc.exists()
+                ? Optional.ofNullable(doc.toObject(Product.class))
+                    .map(product -> {
+                        product.setId(doc.getId());
+                        return product;
+                    })
+                : Optional.empty();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Błąd podczas pobierania produktu", e);
             return Optional.empty();
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Błąd podczas pobierania produktu: " + e.getMessage());
+        } catch (ExecutionException e) {
+            logger.error("Błąd podczas pobierania produktu", e);
             return Optional.empty();
         }
     }
@@ -97,21 +105,24 @@ public class ProductRepository {
     
     public List<Product> findByCategory(String category) {
         if (firestore == null) return new ArrayList<>();
-        
+
         try {
-            ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME)
-                .whereEqualTo("category", category).get();
-            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-            
-            List<Product> products = new ArrayList<>();
-            for (QueryDocumentSnapshot doc : documents) {
-                Product product = doc.toObject(Product.class);
-                product.setId(doc.getId());
-                products.add(product);
-            }
-            return products;
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Błąd podczas filtrowania produktów: " + e.getMessage());
+            List<QueryDocumentSnapshot> documents = firestore.collection(COLLECTION_NAME)
+                .whereEqualTo("category", category).get().get().getDocuments();
+
+            return documents.stream()
+                .map(doc -> {
+                    Product product = doc.toObject(Product.class);
+                    product.setId(doc.getId());
+                    return product;
+                })
+                .collect(Collectors.toCollection(ArrayList::new));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Błąd podczas filtrowania produktów", e);
+            return new ArrayList<>();
+        } catch (ExecutionException e) {
+            logger.error("Błąd podczas filtrowania produktów", e);
             return new ArrayList<>();
         }
     }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -27,20 +28,12 @@ public class OrderController {
     
     @GetMapping
     public String myOrders(Authentication authentication, Model model) {
-        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
             String email = userDetails.getUsername();
-            
-            // znajdź użytkownika po emailu, aby pobrać jego UID
-            Optional<User> userOpt = userService.findByEmail(email);
-            if (userOpt.isPresent()) {
-                String userId = userOpt.get().getUid();
-                // znajdź zamówienia dla tego użytkownika
-                var orders = orderService.findByUserId(userId);
-                model.addAttribute("orders", orders);
-            } else {
-                model.addAttribute("orders", java.util.List.of());
-            }
+            var orders = userService.findByEmail(email)
+                .map(u -> orderService.findByUserId(u.getUid()))
+                .orElse(List.of());
+            model.addAttribute("orders", orders);
         }
         return "orders";
     }

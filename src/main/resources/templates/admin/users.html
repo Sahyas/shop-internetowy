@@ -46,6 +46,9 @@
                                 <option value="ROLE_ADMIN" th:selected="${user.role == 'ROLE_ADMIN'}">ADMIN</option>
                             </select>
                         </form>
+                        <form th:action="@{'/admin/users/' + ${user.uid} + '/delete'}" method="post" style="display: inline;">
+                            <button type="submit" onclick="return confirm('Usunąć użytkownika?');">Usuń</button>
+                        </form>
                     </td>
                 </tr>
             </tbody>

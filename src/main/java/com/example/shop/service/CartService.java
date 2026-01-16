@@ -27,10 +27,9 @@ public class CartService {
         if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof UserDetails) {
             UserDetails userDetails = (UserDetails) auth.getPrincipal();
             String email = userDetails.getUsername();
-            var userOpt = userService.findByEmail(email);
-            if (userOpt.isPresent()) {
-                return userOpt.get().getUid();
-            }
+            return userService.findByEmail(email)
+                .map(u -> u.getUid())
+                .orElse("guest");
         }
         return "guest";
     }
@@ -87,15 +86,10 @@ public class CartService {
     }
     
     public double calculateTotal(ProductService productService) {
-        double total = 0.0;
-        Map<String, Integer> items = getCartItems();
-        
-        for (Map.Entry<String, Integer> entry : items.entrySet()) {
-            var productOpt = productService.findById(entry.getKey());
-            if (productOpt.isPresent()) {
-                total += productOpt.get().getPrice() * entry.getValue();
-            }
-        }
-        return total;
+        return getCartItems().entrySet().stream()
+            .mapToDouble(entry -> productService.findById(entry.getKey())
+                .map(p -> p.getPrice() * entry.getValue())
+                .orElse(0.0))
+            .sum();
     }
 }

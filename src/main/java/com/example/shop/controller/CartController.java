@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/cart")
@@ -39,21 +39,16 @@ public class CartController {
     
     @GetMapping
     public String viewCart(Model model) {
-        Map<String, Integer> cartItems = cartService.getCartItems();
-        List<CartItemView> items = new ArrayList<>();
-        double total = 0.0;
-        
-        for (Map.Entry<String, Integer> entry : cartItems.entrySet()) {
-            var productOpt = productService.findById(entry.getKey());
-            if (productOpt.isPresent()) {
-                Product product = productOpt.get();
-                int quantity = entry.getValue();
-                double subtotal = product.getPrice() * quantity;
-                items.add(new CartItemView(product, quantity, subtotal));
-                total += subtotal;
-            }
-        }
-        
+        List<CartItemView> items = cartService.getCartItems().entrySet().stream()
+            .map(entry -> productService.findById(entry.getKey())
+                .map(p -> new CartItemView(p, entry.getValue(), p.getPrice() * entry.getValue())))
+            .flatMap(Optional::stream)
+            .toList();
+
+        double total = items.stream()
+            .mapToDouble(CartItemView::getSubtotal)
+            .sum();
+
         model.addAttribute("cartItems", items);
         model.addAttribute("total", total);
         model.addAttribute("itemCount", cartService.getItemCount());
@@ -100,16 +95,11 @@ public class CartController {
         }
         
         // pobierz userId z zalogowanego użytkownika
-        String userId = "guest";
-        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String email = userDetails.getUsername();
-            // pobierz UID użytkownika
-            var userOpt = userService.findByEmail(email);
-            if (userOpt.isPresent()) {
-                userId = userOpt.get().getUid();
-            }
-        }
+        String userId = (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails)
+            ? userService.findByEmail(userDetails.getUsername())
+                .map(u -> u.getUid())
+                .orElse("guest")
+            : "guest";
         
         // tworzenie zamówienia
         Order order = new Order();
@@ -123,25 +113,21 @@ public class CartController {
         order.setShippingAddress(address);
         
         // dodaj produkty
-        Map<String, Integer> cartItems = cartService.getCartItems();
-        List<Order.OrderItem> orderItems = new ArrayList<>();
-        double totalAmount = 0.0;
-        
-        for (Map.Entry<String, Integer> entry : cartItems.entrySet()) {
-            var productOpt = productService.findById(entry.getKey());
-            if (productOpt.isPresent()) {
-                Product product = productOpt.get();
-                Order.OrderItem item = new Order.OrderItem(
+        List<Order.OrderItem> orderItems = cartService.getCartItems().entrySet().stream()
+            .map(entry -> productService.findById(entry.getKey())
+                .map(product -> new Order.OrderItem(
                     product.getId(),
                     product.getName(),
                     entry.getValue(),
                     product.getPrice()
-                );
-                orderItems.add(item);
-                totalAmount += product.getPrice() * entry.getValue();
-            }
-        }
-        
+                )))
+            .flatMap(Optional::stream)
+            .toList();
+
+        double totalAmount = orderItems.stream()
+            .mapToDouble(item -> item.getPrice() * item.getQuantity())
+            .sum();
+
         order.setItems(orderItems);
         order.setTotalAmount(totalAmount);
         order.setStatus("ZŁOŻONE");

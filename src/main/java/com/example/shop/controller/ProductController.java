@@ -30,13 +30,14 @@ public class ProductController {
     public String addToCart(@PathVariable String id, 
                            @RequestParam(defaultValue = "1") int quantity,
                            RedirectAttributes redirectAttributes) {
-        var productOpt = productService.findById(id);
-        if (productOpt.isPresent()) {
-            cartService.addToCart(id, quantity);
-            redirectAttributes.addFlashAttribute("success", "Produkt dodany do koszyka");
-        } else {
-            redirectAttributes.addFlashAttribute("error", "Nie znaleziono produktu");
-        }
+        productService.findById(id)
+            .ifPresentOrElse(
+                p -> {
+                    cartService.addToCart(id, quantity);
+                    redirectAttributes.addFlashAttribute("success", "Produkt dodany do koszyka");
+                },
+                () -> redirectAttributes.addFlashAttribute("error", "Nie znaleziono produktu")
+            );
         return "redirect:/product/" + id;
     }
 }

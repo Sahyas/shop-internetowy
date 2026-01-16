@@ -49,19 +49,16 @@ public class CartRepository {
         if (firestore == null) return Optional.empty();
         
         try {
-            ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME)
+            return firestore.collection(COLLECTION_NAME)
                 .whereEqualTo("userId", userId)
                 .limit(1)
-                .get();
-            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-            
-            if (!documents.isEmpty()) {
-                QueryDocumentSnapshot doc = documents.get(0);
-                Cart cart = doc.toObject(Cart.class);
-                cart.setId(doc.getId());
-                return Optional.of(cart);
-            }
-            return Optional.empty();
+                .get().get().getDocuments().stream()
+                .findFirst()
+                .map(doc -> {
+                    Cart cart = doc.toObject(Cart.class);
+                    cart.setId(doc.getId());
+                    return cart;
+                });
         } catch (InterruptedException | ExecutionException e) {
             logger.error("Błąd podczas pobierania koszyka: " + e.getMessage());
             return Optional.empty();
@@ -72,16 +69,20 @@ public class CartRepository {
         if (firestore == null) return;
         
         try {
-            ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME)
+            firestore.collection(COLLECTION_NAME)
                 .whereEqualTo("userId", userId)
-                .get();
-            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-            
-            for (QueryDocumentSnapshot doc : documents) {
-                doc.getReference().delete().get();
-            }
+                .get().get().getDocuments()
+                .forEach(doc -> {
+                    try {
+                        doc.getReference().delete().get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        logger.error("Błąd podczas usuwania koszyka: " + e.getMessage());
+                        Thread.currentThread().interrupt();
+                    }
+                });
         } catch (InterruptedException | ExecutionException e) {
             logger.error("Błąd podczas usuwania koszyka: " + e.getMessage());
+            Thread.currentThread().interrupt();
         }
     }
 }

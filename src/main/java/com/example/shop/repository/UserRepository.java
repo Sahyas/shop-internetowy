@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Repository
 public class UserRepository {
@@ -30,13 +31,14 @@ public class UserRepository {
         try {
             DocumentSnapshot doc = firestore.collection(COLLECTION_NAME)
                 .document(uid).get().get();
-                
-            if (doc.exists()) {
-                return Optional.of(doc.toObject(User.class));
-            }
+
+            return doc.exists() ? Optional.ofNullable(doc.toObject(User.class)) : Optional.empty();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Błąd podczas pobierania użytkownika", e);
             return Optional.empty();
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Błąd podczas pobierania użytkownika: " + e.getMessage());
+        } catch (ExecutionException e) {
+            logger.error("Błąd podczas pobierania użytkownika", e);
             return Optional.empty();
         }
     }
@@ -47,14 +49,15 @@ public class UserRepository {
         try {
             ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME)
                 .whereEqualTo("email", email).get();
-            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-            
-            if (!documents.isEmpty()) {
-                return Optional.of(documents.get(0).toObject(User.class));
-            }
+            return future.get().getDocuments().stream()
+                .findFirst()
+                .map(doc -> doc.toObject(User.class));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Błąd podczas wyszukiwania użytkownika po email", e);
             return Optional.empty();
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Błąd podczas wyszukiwania użytkownika po email: " + e.getMessage());
+        } catch (ExecutionException e) {
+            logger.error("Błąd podczas wyszukiwania użytkownika po email", e);
             return Optional.empty();
         }
     }
@@ -75,22 +78,26 @@ public class UserRepository {
     
     public List<User> findAll() {
         if (firestore == null) return new ArrayList<>();
-        
+
         try {
-            ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).get();
-            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-            
-            List<User> users = new ArrayList<>();
-            for (QueryDocumentSnapshot doc : documents) {
-                try {
-                    users.add(doc.toObject(User.class));
-                } catch (Exception e) {
-                    logger.warn("Nie można deserializować użytkownika: " + e.getMessage());
-                }
-            }
-            return users;
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error("Błąd podczas pobierania użytkowników: " + e.getMessage());
+            List<QueryDocumentSnapshot> documents = firestore.collection(COLLECTION_NAME).get().get().getDocuments();
+            return documents.stream()
+                .map(doc -> {
+                    try {
+                        return Optional.ofNullable(doc.toObject(User.class));
+                    } catch (Exception e) {
+                        logger.warn("Nie można deserializować użytkownika", e);
+                        return Optional.<User>empty();
+                    }
+                })
+                .flatMap(Optional::stream)
+                .collect(Collectors.toCollection(ArrayList::new));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Błąd podczas pobierania użytkowników", e);
+            return new ArrayList<>();
+        } catch (ExecutionException e) {
+            logger.error("Błąd podczas pobierania użytkowników", e);
             return new ArrayList<>();
         }
     }
@@ -99,13 +106,37 @@ public class UserRepository {
         if (firestore == null) return;
         
         try {
-            ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).get();
-            for (QueryDocumentSnapshot doc : future.get().getDocuments()) {
-                doc.getReference().delete().get();
-            }
+            firestore.collection(COLLECTION_NAME).get().get().getDocuments().stream()
+                .forEach(doc -> {
+                    try {
+                        doc.getReference().delete().get();
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        logger.warn("Przerwano czyszczenie kolekcji użytkowników", ex);
+                    } catch (ExecutionException ex) {
+                        logger.warn("Błąd podczas czyszczenia dokumentu użytkownika", ex);
+                    }
+                });
             logger.info("Wyczyszczono kolekcję użytkowników");
-        } catch (InterruptedException | ExecutionException e) {
-            logger.warn("Błąd podczas czyszczenia kolekcji: " + e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warn("Przerwano czyszczenie kolekcji", e);
+        } catch (ExecutionException e) {
+            logger.warn("Błąd podczas czyszczenia kolekcji", e);
+        }
+    }
+
+    public void deleteByUid(String uid) {
+        if (firestore == null) return;
+
+        try {
+            firestore.collection(COLLECTION_NAME).document(uid).delete().get();
+            logger.info("Usunięto użytkownika {}", uid);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.warn("Przerwano usuwanie użytkownika {}", uid, e);
+        } catch (ExecutionException e) {
+            logger.warn("Błąd podczas usuwania użytkownika {}", uid, e);
         }
     }
 }

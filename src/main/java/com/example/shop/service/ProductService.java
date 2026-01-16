@@ -32,15 +32,15 @@ public class ProductService {
     }
 
     private void backfillMissingImages(List<Product> products) {
-        int updated = 0;
-        for (Product p : products) {
-            if (p.getImageUrl() == null || p.getImageUrl().isBlank()) {
-                String fallback = fallbackImageFor(p.getCategory());
-                p.setImageUrl(fallback);
+        long updated = products.stream()
+            .filter(p -> p.getImageUrl() == null || p.getImageUrl().isBlank())
+            .mapToLong(p -> {
+                p.setImageUrl(fallbackImageFor(p.getCategory()));
                 save(p);
-                updated++;
-            }
-        }
+                return 1L;
+            })
+            .sum();
+
         if (updated > 0) {
             logger.info("Uzupełniono obrazki dla {} produktów", updated);
         }

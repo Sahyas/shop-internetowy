@@ -17,11 +17,10 @@ public class HomeController {
 
     @GetMapping("/")
     public String index(@RequestParam(required = false) String category, Model model) {
-        if (category != null && !category.isEmpty()) {
-            model.addAttribute("products", productService.findByCategory(category));
+        boolean hasCategory = category != null && !category.isEmpty();
+        model.addAttribute("products", hasCategory ? productService.findByCategory(category) : productService.findAll());
+        if (hasCategory) {
             model.addAttribute("selectedCategory", category);
-        } else {
-            model.addAttribute("products", productService.findAll());
         }
         return "index";
     }

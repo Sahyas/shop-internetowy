@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -67,20 +68,16 @@ public class OrderRepository {
         if (firestore == null) return new ArrayList<>();
         
         try {
-            ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME)
+            return firestore.collection(COLLECTION_NAME)
                 .whereEqualTo("userId", userId)
-                .get();
-            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-            
-            List<Order> orders = new ArrayList<>();
-            for (QueryDocumentSnapshot doc : documents) {
-                Order order = doc.toObject(Order.class);
-                order.setId(doc.getId());
-                orders.add(order);
-            }
-            // Sortowanie w pamięci
-            orders.sort((o1, o2) -> Long.compare(o2.getCreatedAt(), o1.getCreatedAt()));
-            return orders;
+                .get().get().getDocuments().stream()
+                .map(doc -> {
+                    Order order = doc.toObject(Order.class);
+                    order.setId(doc.getId());
+                    return order;
+                })
+                .sorted(Comparator.comparingLong(Order::getCreatedAt).reversed())
+                .toList();
         } catch (InterruptedException | ExecutionException e) {
             logger.error("Błąd podczas pobierania zamówień użytkownika: " + e.getMessage());
             return new ArrayList<>();
@@ -91,19 +88,15 @@ public class OrderRepository {
         if (firestore == null) return new ArrayList<>();
         
         try {
-            ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME)
-                .get();
-            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-            
-            List<Order> orders = new ArrayList<>();
-            for (QueryDocumentSnapshot doc : documents) {
-                Order order = doc.toObject(Order.class);
-                order.setId(doc.getId());
-                orders.add(order);
-            }
-            // Sortowanie w pamięci
-            orders.sort((o1, o2) -> Long.compare(o2.getCreatedAt(), o1.getCreatedAt()));
-            return orders;
+            return firestore.collection(COLLECTION_NAME)
+                .get().get().getDocuments().stream()
+                .map(doc -> {
+                    Order order = doc.toObject(Order.class);
+                    order.setId(doc.getId());
+                    return order;
+                })
+                .sorted(Comparator.comparingLong(Order::getCreatedAt).reversed())
+                .toList();
         } catch (InterruptedException | ExecutionException e) {
             logger.error("Błąd podczas pobierania wszystkich zamówień: " + e.getMessage());
             return new ArrayList<>();
@@ -115,15 +108,20 @@ public class OrderRepository {
         
         try {
             logger.info("Czyszczenie kolekcji zamówień...");
-            ApiFuture<QuerySnapshot> future = firestore.collection(COLLECTION_NAME).get();
-            List<QueryDocumentSnapshot> documents = future.get().getDocuments();
-            
-            for (QueryDocumentSnapshot doc : documents) {
-                doc.getReference().delete().get();
-            }
+            List<QueryDocumentSnapshot> documents = firestore.collection(COLLECTION_NAME).get().get().getDocuments();
+
+            documents.forEach(doc -> {
+                try {
+                    doc.getReference().delete().get();
+                } catch (InterruptedException | ExecutionException e) {
+                    logger.error("Błąd podczas czyszczenia kolekcji zamówień: " + e.getMessage());
+                    Thread.currentThread().interrupt();
+                }
+            });
             logger.info("Kolekcja zamówień wyczyszczona: {} dokumentów usuniętych", documents.size());
         } catch (InterruptedException | ExecutionException e) {
             logger.error("Błąd podczas czyszczenia kolekcji zamówień: " + e.getMessage());
+            Thread.currentThread().interrupt();
         }
     }
 }

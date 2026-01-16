@@ -52,9 +52,7 @@ public class AuthController {
             result.rejectValue("confirmPassword", "match", "Hasła muszą być takie same");
         }
 
-        if (result.hasErrors()) {
-            return "register";
-        }
+        if (result.hasErrors()) return "register";
 
         try {
             userService.registerUser(registerDTO.getEmail(), registerDTO.getPassword());

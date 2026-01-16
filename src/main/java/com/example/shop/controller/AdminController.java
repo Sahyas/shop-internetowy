@@ -74,24 +74,18 @@ public class AdminController {
 
         // Jeśli productDTO ma ID, to edycja, w przeciwnym razie dodawanie nowego
         if (productDTO.getId() != null && !productDTO.getId().isEmpty()) {
-            // Edycja istniejącego produktu
-            var productOpt = productService.findById(productDTO.getId());
-            if (productOpt.isEmpty()) {
-                return "redirect:/admin/products";
-            }
-            
-            Product product = productOpt.get();
-            product.setName(productDTO.getName());
-            product.setDescription(productDTO.getDescription());
-            product.setPrice(productDTO.getPrice());
-            product.setCategory(productDTO.getCategory());
-            product.setStockQuantity(productDTO.getStockQuantity());
-            product.setImageUrl(productDTO.getImageUrl());
-            
-            productService.save(product);
-            redirectAttributes.addFlashAttribute("success", "Produkt zaktualizowany pomyślnie");
+            productService.findById(productDTO.getId())
+                .ifPresentOrElse(product -> {
+                    product.setName(productDTO.getName());
+                    product.setDescription(productDTO.getDescription());
+                    product.setPrice(productDTO.getPrice());
+                    product.setCategory(productDTO.getCategory());
+                    product.setStockQuantity(productDTO.getStockQuantity());
+                    product.setImageUrl(productDTO.getImageUrl());
+                    productService.save(product);
+                    redirectAttributes.addFlashAttribute("success", "Produkt zaktualizowany pomyślnie");
+                }, () -> redirectAttributes.addFlashAttribute("error", "Nie znaleziono produktu"));
         } else {
-            // Tworzenie nowego produktu
             Product product = new Product();
             product.setName(productDTO.getName());
             product.setDescription(productDTO.getDescription());
@@ -99,7 +93,6 @@ public class AdminController {
             product.setCategory(productDTO.getCategory());
             product.setStockQuantity(productDTO.getStockQuantity());
             product.setImageUrl(productDTO.getImageUrl());
-            
             productService.save(product);
             redirectAttributes.addFlashAttribute("success", "Produkt dodany pomyślnie");
         }
@@ -109,24 +102,21 @@ public class AdminController {
     
     @GetMapping("/products/{id}/edit")
     public String editProductForm(@PathVariable String id, Model model) {
-        var productOpt = productService.findById(id);
-        if (productOpt.isEmpty()) {
-            return "redirect:/admin/products";
-        }
-        
-        Product product = productOpt.get();
-        ProductDTO dto = new ProductDTO();
-        dto.setId(product.getId());
-        dto.setName(product.getName());
-        dto.setDescription(product.getDescription());
-        dto.setPrice(product.getPrice());
-        dto.setCategory(product.getCategory());
-        dto.setStockQuantity(product.getStockQuantity());
-        dto.setImageUrl(product.getImageUrl());
-        
-        model.addAttribute("productDTO", dto);
-        model.addAttribute("isEdit", true);
-        return "admin/product-form";
+        return productService.findById(id)
+            .map(product -> {
+                ProductDTO dto = new ProductDTO();
+                dto.setId(product.getId());
+                dto.setName(product.getName());
+                dto.setDescription(product.getDescription());
+                dto.setPrice(product.getPrice());
+                dto.setCategory(product.getCategory());
+                dto.setStockQuantity(product.getStockQuantity());
+                dto.setImageUrl(product.getImageUrl());
+                model.addAttribute("productDTO", dto);
+                model.addAttribute("isEdit", true);
+                return "admin/product-form";
+            })
+            .orElse("redirect:/admin/products");
     }
     
     
@@ -176,6 +166,14 @@ public class AdminController {
                                 RedirectAttributes redirectAttributes) {
         userService.updateUserRole(uid, role);
         redirectAttributes.addFlashAttribute("success", "Rola użytkownika zmieniona");
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/users/{uid}/delete")
+    public String deleteUser(@PathVariable String uid,
+                             RedirectAttributes redirectAttributes) {
+        userService.deleteUser(uid);
+        redirectAttributes.addFlashAttribute("success", "Użytkownik usunięty");
         return "redirect:/admin/users";
     }
 }
