@@ -93,15 +93,13 @@ public class CartController {
             model.addAttribute("total", cartService.calculateTotal(productService));
             return "checkout";
         }
-        
-        // pobierz userId z zalogowanego użytkownika
+
         String userId = (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails)
             ? userService.findByEmail(userDetails.getUsername())
                 .map(u -> u.getUid())
                 .orElse("guest")
             : "guest";
-        
-        // tworzenie zamówienia
+
         Order order = new Order();
         order.setUserId(userId);
         
@@ -111,8 +109,7 @@ public class CartController {
         address.setPostalCode(checkoutDTO.getPostalCode());
         address.setPhone(checkoutDTO.getPhone());
         order.setShippingAddress(address);
-        
-        // dodaj produkty
+
         List<Order.OrderItem> orderItems = cartService.getCartItems().entrySet().stream()
             .map(entry -> productService.findById(entry.getKey())
                 .map(product -> new Order.OrderItem(
@@ -143,8 +140,7 @@ public class CartController {
     public String confirmation() {
         return "order-confirmation";
     }
-    
-    // klasa pomocnicza do wyświetlania
+
     public static class CartItemView {
         private Product product;
         private int quantity;

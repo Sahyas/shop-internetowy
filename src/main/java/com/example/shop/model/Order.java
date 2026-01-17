@@ -8,7 +8,7 @@ public class Order {
     private String userId;
     private List<OrderItem> items;
     private double totalAmount;
-    private String status;  // ZŁOŻONE, WYSŁANE, DOSTARCZONO
+    private String status;
     private ShippingAddress shippingAddress;
     private long createdAt;
     
@@ -17,8 +17,7 @@ public class Order {
         this.createdAt = System.currentTimeMillis();
         this.status = "ZŁOŻONE";
     }
-    
-    // gettery i settery
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     

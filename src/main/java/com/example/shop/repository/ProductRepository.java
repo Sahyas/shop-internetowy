@@ -76,12 +76,10 @@ public class ProductRepository {
         
         try {
             if (product.getId() == null || product.getId().isEmpty()) {
-                // nowy produkt
                 DocumentReference docRef = firestore.collection(COLLECTION_NAME).document();
                 product.setId(docRef.getId());
                 docRef.set(product).get();
             } else {
-                // aktualizacja istniejącego
                 firestore.collection(COLLECTION_NAME)
                     .document(product.getId())
                     .set(product).get();

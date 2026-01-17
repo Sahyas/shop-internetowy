@@ -38,8 +38,7 @@ public class AdminController {
     public String adminDashboard() {
         return "redirect:/admin/products";
     }
-    
-    // Zarządzanie produktami
+
     @GetMapping("/products")
     public String listProducts(Model model) {
         model.addAttribute("products", productService.findAll());
@@ -72,7 +71,6 @@ public class AdminController {
             return "redirect:/admin/products";
         }
 
-        // Jeśli productDTO ma ID, to edycja, w przeciwnym razie dodawanie nowego
         if (productDTO.getId() != null && !productDTO.getId().isEmpty()) {
             productService.findById(productDTO.getId())
                 .ifPresentOrElse(product -> {
@@ -125,7 +123,6 @@ public class AdminController {
                                @Valid @ModelAttribute ProductDTO productDTO,
                                BindingResult result,
                                RedirectAttributes redirectAttributes) {
-        // Ta metoda jest zastawiania, obsługiwanie edycji w createOrUpdateProduct
         return "redirect:/admin/products";
     }
     
@@ -136,8 +133,7 @@ public class AdminController {
         redirectAttributes.addFlashAttribute("success", "Produkt usunięty");
         return "redirect:/admin/products";
     }
-    
-    // Zarządzanie zamówieniami
+
     @GetMapping("/orders")
     public String listOrders(Model model) {
         model.addAttribute("orders", orderService.findAll());
@@ -152,8 +148,7 @@ public class AdminController {
         redirectAttributes.addFlashAttribute("success", "Status zamówienia zmieniony");
         return "redirect:/admin/orders";
     }
-    
-    // Zarządzanie użytkownikami
+
     @GetMapping("/users")
     public String listUsers(Model model) {
         model.addAttribute("users", userService.findAll());

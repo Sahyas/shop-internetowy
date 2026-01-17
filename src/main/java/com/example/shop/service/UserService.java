@@ -29,7 +29,6 @@ public class UserService {
     
     @PostConstruct
     public void initTestUsers() {
-        // konta testowe
         try {
             createTestUser("admin@example.com", "admin123", "ROLE_ADMIN");
             createTestUser("user@example.com", "user123", "ROLE_USER");
@@ -58,15 +57,13 @@ public class UserService {
     }
     
     public User registerUser(String email, String password) throws FirebaseAuthException {
-        // rejestracja w Firebase Auth
         UserRecord.CreateRequest request = new UserRecord.CreateRequest()
             .setEmail(email)
             .setPassword(password)
             .setEmailVerified(false);
             
         UserRecord userRecord = FirebaseAuth.getInstance().createUser(request);
-        
-        // zapis do Firestore z zaszyfrowanym hasłem
+
         User user = new User(userRecord.getUid(), email, "ROLE_USER");
         user.setPassword(passwordEncoder.encode(password));
         return userRepository.save(user);

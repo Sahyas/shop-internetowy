@@ -36,15 +36,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         
         User user = userOpt.get();
         logger.info("Znaleziono użytkownika: " + email + ", rola: " + user.getRole());
-        
-        // Upewnij się, że rola zawiera prefix ROLE_
+
         String roleName = user.getRole();
         if (!roleName.startsWith("ROLE_")) {
             roleName = "ROLE_" + roleName;
         }
         GrantedAuthority authority = new SimpleGrantedAuthority(roleName);
-        
-        // Pobierz zaszyfrowane hasło z bazy danych Firebase
+
         String password = user.getPassword();
         if (password == null || password.isEmpty()) {
             logger.error("Brak hasła dla użytkownika: " + email);

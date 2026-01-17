@@ -41,7 +41,6 @@ public class FirebaseStorageService {
             return null;
         }
 
-        // Jeśli dostępny bucket i Storage — użyj Firebase; w przeciwnym razie lokalny zapis
         if (storage != null && bucketName != null && !bucketName.isBlank()) {
             return uploadToFirebase(file, folder);
         }
@@ -76,7 +75,6 @@ public class FirebaseStorageService {
 
         Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
 
-        // public URL względny dla serwera (obsługiwany przez ResourceHandler w WebConfig)
         String publicUrl = "/uploads/" + safeFolder + "/" + filename;
         logger.info("Plik zapisany lokalnie: {}", target);
         return publicUrl;

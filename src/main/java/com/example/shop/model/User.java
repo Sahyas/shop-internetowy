@@ -1,11 +1,11 @@
 package com.example.shop.model;
 
 public class User {
-    private String uid;  // Firebase UID
+    private String uid;
     private String email;
-    private String password;  // Zaszyfrowane hasło
-    private String role;  // ROLE_USER lub ROLE_ADMIN
-    private long createdAt;  // timestamp zamiast LocalDateTime
+    private String password;
+    private String role;
+    private long createdAt;
     
     public User() {
         this.createdAt = System.currentTimeMillis();
@@ -17,8 +17,7 @@ public class User {
         this.role = role;
         this.createdAt = System.currentTimeMillis();
     }
-    
-    // gettery i settery
+
     public String getUid() { return uid; }
     public void setUid(String uid) { this.uid = uid; }
     
